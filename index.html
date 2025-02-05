@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plasmid Annotation Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #output { margin-top: 20px; }
+        #result-links { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Plasmid Annotation Tool</h1>
+    <p>Upload a FASTA or GenBank file for annotation.</p>
+
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload</button>
+
+    <div id="output"></div>
+    <div id="result-links">
+        <h3>Download Results:</h3>
+        <a id="pngLink" href="#" target="_blank">Plasmid Map (PNG)</a><br>
+        <a id="csvLink" href="#" target="_blank">Annotation Data (CSV)</a><br>
+        <a id="gbkLink" href="#" target="_blank">Annotated GenBank File (GBK)</a>
+    </div>
+
+    <script>
+        async function uploadFile() {
+            let fileInput = document.getElementById("fileInput");
+            let outputDiv = document.getElementById("output");
+            let resultLinks = document.getElementById("result-links");
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a file first.");
+                return;
+            }
+
+            let file = fileInput.files[0];
+            let formData = new FormData();
+            formData.append("file", file);
+
+            outputDiv.innerHTML = "<p>Uploading and processing... Please wait.</p>";
+
+            try {
+                let response = await fetch("http://127.0.0.1:8000/upload/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                let data = await response.json();
+
+                if (data.error) {
+                    outputDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                } else {
+                    outputDiv.innerHTML = "<p>Processing complete! Download your results below.</p>";
+
+                    // Update links with correct URLs
+                    document.getElementById("pngLink").href = "http://127.0.0.1:8000" + data.png_url;
+                    document.getElementById("csvLink").href = "http://127.0.0.1:8000" + data.csv_url;
+                    document.getElementById("gbkLink").href = "http://127.0.0.1:8000" + data.gbk_url;
+                    resultLinks.style.display = "block";
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<p style="color: red;">Upload failed. Please try again.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
