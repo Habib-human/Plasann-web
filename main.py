@@ -6,6 +6,8 @@ import run_pipeline  # Import the pipeline script
 
 app = FastAPI()
 
+port = int(os.environ.get("PORT", 8080)) 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # <-- Allows all origins (change to ["http://127.0.0.1:8001"] for security)
@@ -65,3 +67,9 @@ async def get_result_file(plasmid: str, filename: str):
         return {"error": f"File not found: {file_path}"}
 
     return FileResponse(file_path)
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
